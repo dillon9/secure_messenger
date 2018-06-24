@@ -23,6 +23,8 @@ s.bind((TCP_IP, TCP_PORT))
 s.listen(1)
 
 conn, addr = s.accept()
+mainc = 0
+prev = []
 while 1:
     data = conn.recv(BUFFER_SIZE)
     f = open("text.txt","wb")
@@ -36,19 +38,19 @@ while 1:
     while 1:
     	if x[c] == "^" and x[c+1] == "$":
     		x = x[:c]
-    		print x
+    		prev.append(x)
     		break
     	c+=1
 
+    if mainc == 0:
+    	print x
+    elif prev[mainc-1] != x:
+		print x    	
+
     if not data: break
     conn.send(x)
+    mainc += 1
 
 
 conn.close()
 #encry.cleanup()
-
-#os.remove("private_key.pem")
-#os.remove("public_key.pem")
-#os.remove("eText.txt")
-#os.remove("dText.txt")
-#os.remove("text.txt")
