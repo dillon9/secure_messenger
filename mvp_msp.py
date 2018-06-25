@@ -10,9 +10,14 @@ conn.connect((sendOn, sendPort))
 encry.genKey()
 while 1:
 	f = open("text.txt","wb")
-	f.write(raw_input()+"^$")
+	writeTo = raw_input()
+	if not writeTo:
+		print "Enter something"
+		f.close()
+		continue
+	f.write(writeTo+"^$")
 	f.close()
-	
+
 	encry.writeEncrpyt()
 
 	f = open("eText.txt","rb")

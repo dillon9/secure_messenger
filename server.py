@@ -24,6 +24,7 @@ s.listen(1)
 
 conn, addr = s.accept()
 mainc = 0
+
 prev = []
 while 1:
     data = conn.recv(BUFFER_SIZE)
@@ -42,14 +43,20 @@ while 1:
     		break
     	c+=1
 
+    if not x:
+    	mainc +=1
+    	continue
     if mainc == 0:
     	print x
     elif prev[mainc-1] != x:
-		print x    	
+		print x
 
-    if not data: break
-    conn.send(x)
     mainc += 1
+
+    if not data:
+    	break
+    conn.send(x)
+    
 
 
 conn.close()
