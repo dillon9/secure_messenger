@@ -35,7 +35,7 @@ def encrypt_blob(blob, public_key):
     return base64.b64encode(encrypted)
 
 def writeEncrpyt():
-	fd = open("public_key.pem", "rb")
+	fd = open("public_key2.pem", "rb")
 	public_key = fd.read()
 	fd.close()
 
