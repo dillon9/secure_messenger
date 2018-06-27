@@ -10,8 +10,6 @@ import base64
 import os
 import sys
 
-
-
 def genKey():
 	new_key = RSA.generate(4096, e=65537)
 	private_key = new_key.exportKey("PEM")
@@ -57,7 +55,6 @@ def writeEncrpyt():
 	fd.write(encrypted_blob)
 	fd.close()
 
-
 def decrypt_blob(encrypted_blob, private_key):
     rsakey = RSA.importKey(private_key)
     rsakey = PKCS1_OAEP.new(rsakey)
@@ -91,7 +88,6 @@ def writeDecrypt():
 	fd = open("dText.txt", "wb")
 	fd.write(decrypt_blob(encrypted_blob, private_key))
 	fd.close()
-
 
 def client(fileno):
 	sendTo = "127.0.0.1"
@@ -175,7 +171,6 @@ def server():
 	    if not data:
 	    	break
 	    conn.send(x)
-
 	conn.close()
 
 if __name__ == '__main__':
