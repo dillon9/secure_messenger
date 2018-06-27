@@ -108,10 +108,10 @@ def writeDecrypt():
 
 
 def client(unused, unused2):
-	sendOn = "127.0.0.1"
+	sendTo = "127.0.0.1"
 	sendPort = 5005
 	conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	conn.connect((sendOn, sendPort))
+	conn.connect((sendTo, sendPort))
 	genKey()
 
 	f = open("public_key.pem", "rb")
