@@ -89,8 +89,8 @@ def writeDecrypt():
 	fd.write(decrypt_blob(encrypted_blob, private_key))
 	fd.close()
 
-def client(fileno):
-	sendTo = "127.0.0.1"
+def client(fileno,ip):
+	sendTo = ip
 	sendPort = 5005
 	conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	conn.connect((sendTo, sendPort))
@@ -191,12 +191,12 @@ if __name__ == '__main__':
 		upnp.addportmapping(port, proto, upnp.lanaddr, port, description, '')
 	except Exception, e:
 		print "Unable to add UPnP port mapping. If you are not behind NAT, ignore this message, otherwise you will need to manually forward port 5005 to your computer's IP address."
-	
+	ip = raw_input("What ip to connect to: ")
 	try:
 		fn = sys.stdin.fileno()
 		serverThread = Process(target=server)
 		serverThread.start()
-		clientThread = Process(target=client, args=(fn,))
+		clientThread = Process(target=client, args=(fn,ip,))
 		clientThread.start()
 		serverThread.join()
 		clientThread.join()
