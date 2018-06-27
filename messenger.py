@@ -9,9 +9,7 @@ import zlib
 import base64
 import os
 
-#Enable this if upnp is enabled on your router
-#otherwise manually forward the port
-"""
+# UPnP code for automatically opening ports on routers that support UPnP
 port = 5005
 proto = "TCP"
 description = "Python p2p chat"
@@ -19,13 +17,15 @@ description = "Python p2p chat"
 upnp = miniupnpc.UPnP()
 upnp.discoverdelay = 10
 upnp.discover()
-upnp.selectigd()
+try:
+	upnp.selectigd()
+except Exception, e:
+	z = 1
 
 try:
 	upnp.addportmapping(port, proto, upnp.lanaddr, port, description, '')
 except Exception, e:
-	print "Unable to add UPnP port mapping. ", e
-"""
+	print "Unable to add UPnP port mapping. If you are not behind NAT, ignore this message, otherwise you will need to manually forward port 5005 to your computer's IP address."
 
 def genKey():
 	new_key = RSA.generate(4096, e=65537)
