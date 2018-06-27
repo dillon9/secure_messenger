@@ -1,6 +1,6 @@
 import socket
 import os
-import thread
+from multiprocessing import Process
 import time
 import miniupnpc
 from Crypto.PublicKey import RSA
@@ -8,24 +8,9 @@ from Crypto.Cipher import PKCS1_OAEP
 import zlib
 import base64
 import os
+import sys
 
-# UPnP code for automatically opening ports on routers that support UPnP
-port = 5005
-proto = "TCP"
-description = "Python p2p chat"
 
-upnp = miniupnpc.UPnP()
-upnp.discoverdelay = 10
-upnp.discover()
-try:
-	upnp.selectigd()
-except Exception, e:
-	pass
-
-try:
-	upnp.addportmapping(port, proto, upnp.lanaddr, port, description, '')
-except Exception, e:
-	print "Unable to add UPnP port mapping. If you are not behind NAT, ignore this message, otherwise you will need to manually forward port 5005 to your computer's IP address."
 
 def genKey():
 	new_key = RSA.generate(4096, e=65537)
@@ -92,6 +77,7 @@ def cleanup():
 	os.remove("eText.txt")
 	os.remove("dText.txt")
 	os.remove("text.txt")
+	os.remove("peer_public.pem")
 
 def writeDecrypt():
 	fd = open("private_key.pem", "rb")
@@ -107,7 +93,7 @@ def writeDecrypt():
 	fd.close()
 
 
-def client(unused, unused2):
+def client(fileno):
 	sendTo = "127.0.0.1"
 	sendPort = 5005
 	conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -118,7 +104,7 @@ def client(unused, unused2):
 	pubkey = f.read()
 	conn.send(pubkey)
 	f.close()
-
+	sys.stdin = os.fdopen(fileno)
 	while 1:
 		f = open("text.txt","wb")
 		writeTo = raw_input()
@@ -139,7 +125,7 @@ def client(unused, unused2):
 		data = conn.recv(1024)
 	conn.close()
 
-def server(unused, unused2):
+def server():
 	TCP_IP = '0.0.0.0'
 	TCP_PORT = 5005
 	BUFFER_SIZE = 4096
@@ -192,12 +178,33 @@ def server(unused, unused2):
 
 	conn.close()
 
-#try:
-thread.start_new_thread(server,("Server-Thread",5))
-time.sleep(2)
-thread.start_new_thread(client,("Client-Thread",5))
-#except:
-	#print "Of course it doesn't work the first time idiot"
+if __name__ == '__main__':
+	# UPnP code for automatically opening ports on routers that support UPnP
+	port = 5005
+	proto = "TCP"
+	description = "Python p2p chat"
 
-while 1:
-	pass
+	upnp = miniupnpc.UPnP()
+	upnp.discoverdelay = 10
+	upnp.discover()
+	try:
+		upnp.selectigd()
+	except Exception, e:
+		pass
+
+	try:
+		upnp.addportmapping(port, proto, upnp.lanaddr, port, description, '')
+	except Exception, e:
+		print "Unable to add UPnP port mapping. If you are not behind NAT, ignore this message, otherwise you will need to manually forward port 5005 to your computer's IP address."
+	
+	try:
+		fn = sys.stdin.fileno()
+		serverThread = Process(target=server)
+		serverThread.start()
+		clientThread = Process(target=client, args=(fn,))
+		clientThread.start()
+		serverThread.join()
+		clientThread.join()
+	except KeyboardInterrupt:
+		cleanup()
+		os._exit()
