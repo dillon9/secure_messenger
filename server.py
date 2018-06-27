@@ -2,9 +2,9 @@ import socket
 import encry
 import os
 
-TCP_IP = '127.0.0.1'
+TCP_IP = '0.0.0.0'
 TCP_PORT = 5005
-BUFFER_SIZE = 512
+BUFFER_SIZE = 4096
 
 """conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 conn.connect(("8.8.8.8", 80))
@@ -24,11 +24,22 @@ s.listen(1)
 
 conn, addr = s.accept()
 mainc = 0
-
 prev = []
+pubkeyc = 0
+
 while 1:
     data = conn.recv(BUFFER_SIZE)
-    f = open("text.txt","wb")
+    if not data: break
+    conn.send(data)
+
+f = open("public_key.pem", "wb")
+f.write(data)
+f.close()
+
+
+while 1:
+    data = conn.recv(BUFFER_SIZE)
+    f = open("eText.txt","wb")
     f.write(data)
     f.close()
     encry.writeDecrypt()

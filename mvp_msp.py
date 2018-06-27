@@ -2,12 +2,19 @@
 import socket
 import encry
 import os
+
 sendOn = "127.0.0.1"
 sendPort = 5005
 
 conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 conn.connect((sendOn, sendPort))
 encry.genKey()
+
+f = open("public_key.pem", "rb")
+pubkey = f.read()
+conn.send(pubkey)
+f.close()
+
 while 1:
 	f = open("text.txt","wb")
 	writeTo = raw_input()
