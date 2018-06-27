@@ -58,7 +58,7 @@ def encrypt_blob(blob, public_key):
     return base64.b64encode(encrypted)
 
 def writeEncrpyt():
-	fd = open("public_key2.pem", "rb")
+	fd = open("peer_public.pem", "rb")
 	public_key = fd.read()
 	fd.close()
 
@@ -155,7 +155,7 @@ def server(unused, unused2):
 	data = conn.recv(BUFFER_SIZE)
 	conn.send(data)
 
-	f = open("public_key2.pem", "wb")
+	f = open("peer_public.pem", "wb")
 	f.write(data)
 	f.close()
 
