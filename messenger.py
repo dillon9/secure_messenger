@@ -20,7 +20,7 @@ upnp.discover()
 try:
 	upnp.selectigd()
 except Exception, e:
-	z = 1
+	pass
 
 try:
 	upnp.addportmapping(port, proto, upnp.lanaddr, port, description, '')
