@@ -180,9 +180,9 @@ def server(unused, unused2):
 	    	mainc +=1
 	    	continue
 	    if mainc == 0:
-	    	print x
+	    	print "Them: " + x
 	    elif prev[mainc-1] != x:
-			print x
+			print "Them: " + x
 
 	    mainc += 1
 
