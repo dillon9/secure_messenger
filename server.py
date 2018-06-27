@@ -28,13 +28,11 @@ prev = []
 
 data = conn.recv(BUFFER_SIZE)
 print data
-#if not data: break
 conn.send(data)
 
-f = open("public_key.pem", "wb")
+f = open("public_key2.pem", "wb")
 f.write(data)
 f.close()
-
 
 while 1:
     data = conn.recv(BUFFER_SIZE)
@@ -66,8 +64,6 @@ while 1:
     if not data:
     	break
     conn.send(x)
-    
-
 
 conn.close()
 #encry.cleanup()
