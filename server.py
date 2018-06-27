@@ -25,12 +25,11 @@ s.listen(1)
 conn, addr = s.accept()
 mainc = 0
 prev = []
-pubkeyc = 0
 
-while 1:
-    data = conn.recv(BUFFER_SIZE)
-    if not data: break
-    conn.send(data)
+data = conn.recv(BUFFER_SIZE)
+print data
+#if not data: break
+conn.send(data)
 
 f = open("public_key.pem", "wb")
 f.write(data)
