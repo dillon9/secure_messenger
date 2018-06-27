@@ -3,6 +3,7 @@ This is a peer to peer RSA encrypted messenger.  If you're not running the singl
 
 # Dependencies
 [PyCryptodome](https://pycryptodome.readthedocs.io/en/latest/src/introduction.html)
+
 [miniupnpc](https://pypi.org/project/miniupnpc/)
 
 # Contributors
