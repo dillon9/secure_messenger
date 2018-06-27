@@ -27,7 +27,6 @@ mainc = 0
 prev = []
 
 data = conn.recv(BUFFER_SIZE)
-print data
 conn.send(data)
 
 f = open("public_key2.pem", "wb")
