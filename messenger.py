@@ -40,7 +40,7 @@ def encrypt_blob(blob, public_key):
         offset += chunk_size
     return base64.b64encode(encrypted)
 
-def writeEncrpyt():
+def writeEncrypt():
 	fd = open("peer_public.pem", "rb")
 	public_key = fd.read()
 	fd.close()
@@ -111,7 +111,7 @@ def client(fileno,ip):
 		f.write(writeTo+"^$")
 		f.close()
 
-		writeEncrpyt()
+		writeEncrypt()
 
 		f = open("eText.txt","rb")
 		x = f.read()
