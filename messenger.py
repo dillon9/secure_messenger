@@ -84,8 +84,14 @@ def cleanup():
 	os.remove("public_key.pem")
 	os.remove("eText.txt")
 	os.remove("dText.txt")
-	os.remove("text.txt")
 	os.remove("peer_public.pem")
+	try:
+		os.remove("eImage.png")
+		os.remove("dImage.png")
+		os.remove("image.png")
+		os.remove("text.txt")
+	except:
+		pass
 
 def writeDecrypt(imageflag=0):
 	fd = open("private_key.pem", "rb")
@@ -137,7 +143,7 @@ def client(fileno,ip):
 		elif writeTo == "image":
 			imageflag = 1
 			writeEncrypt(imageflag)
-			f = open("image.png","rb")
+			f = open("eImage.png","rb")
 			img = f.read()
 			f.close()
 
@@ -244,6 +250,7 @@ if __name__ == '__main__':
 		upnp.addportmapping(port, proto, upnp.lanaddr, port, description, '')
 	except Exception, e:
 		print "Unable to add UPnP port mapping. If you are not behind NAT, ignore this message, otherwise you will need to manually forward port 5005 to your computer's IP address."
+	
 	ip = raw_input("What ip to connect to: ")
 	try:
 		fn = sys.stdin.fileno()
