@@ -9,6 +9,7 @@ import zlib
 import base64
 import os
 import sys
+import subprocess
 
 def genKey():
 	new_key = RSA.generate(4096, e=65537)
@@ -40,20 +41,30 @@ def encrypt_blob(blob, public_key):
         offset += chunk_size
     return base64.b64encode(encrypted)
 
-def writeEncrpyt():
+def writeEncrypt(imageflag=0):
 	fd = open("peer_public.pem", "rb")
 	public_key = fd.read()
 	fd.close()
+	if not imageflag:
+		fd = open("text.txt", "rb")
+		unencrypted_blob = fd.read()
+		fd.close()
 
-	fd = open("text.txt", "rb")
-	unencrypted_blob = fd.read()
-	fd.close()
+		encrypted_blob = encrypt_blob(unencrypted_blob, public_key)
 
-	encrypted_blob = encrypt_blob(unencrypted_blob, public_key)
+		fd = open("eText.txt", "wb")
+		fd.write(encrypted_blob)
+		fd.close()
+	else:
+		fd = open("image.png", "rb")
+		unencrypted_blob = fd.read()
+		fd.close()
 
-	fd = open("eText.txt", "wb")
-	fd.write(encrypted_blob)
-	fd.close()
+		encrypted_blob = encrypt_blob(unencrypted_blob, public_key)
+
+		fd = open("eImage.png", "wb")
+		fd.write(encrypted_blob)
+		fd.close()
 
 def decrypt_blob(encrypted_blob, private_key):
     rsakey = RSA.importKey(private_key)
@@ -76,18 +87,34 @@ def cleanup():
 	os.remove("text.txt")
 	os.remove("peer_public.pem")
 
-def writeDecrypt():
+def writeDecrypt(imageflag=0):
 	fd = open("private_key.pem", "rb")
 	private_key = fd.read()
 	fd.close()
+	if not imageflag:
+		fd = open("eText.txt", "rb")
+		encrypted_blob = fd.read()
+		fd.close()
 
-	fd = open("eText.txt", "rb")
-	encrypted_blob = fd.read()
-	fd.close()
+		fd = open("dText.txt", "wb")
+		fd.write(decrypt_blob(encrypted_blob, private_key))
+		fd.close()
+	else:
+		fd = open("eImage.png", "rb")
+		encrypted_blob = fd.read()
+		fd.close()
 
-	fd = open("dText.txt", "wb")
-	fd.write(decrypt_blob(encrypted_blob, private_key))
-	fd.close()
+		fd = open("dImage.png", "wb")
+		fd.write(decrypt_blob(encrypted_blob, private_key))
+		fd.close()
+
+def openFile(filepath):
+	if sys.platform.startswith('darwin'):
+	    subprocess.call(('open', filepath))
+	elif os.name == 'nt':
+	    os.startfile(filepath)
+	elif os.name == 'posix':
+	    subprocess.call(('xdg-open', filepath))
 
 def client(fileno,ip):
 	sendTo = ip
@@ -102,23 +129,33 @@ def client(fileno,ip):
 	f.close()
 	sys.stdin = os.fdopen(fileno)
 	while 1:
-		f = open("text.txt","wb")
-		writeTo = raw_input()
+		imageflag = 0
+		writeTo = raw_input("")
 		if not writeTo:
 			print "Enter something"
-			f.close()
 			continue
+		elif writeTo == "image":
+			imageflag = 1
+			writeEncrypt(imageflag)
+			f = open("image.png","rb")
+			img = f.read()
+			f.close()
+
+		f = open("text.txt","wb")
 		f.write(writeTo+"^$")
 		f.close()
 
-		writeEncrpyt()
+		writeEncrypt()
 
 		f = open("eText.txt","rb")
 		x = f.read()
 		f.close()
 
 		conn.send(x)
-		data = conn.recv(1024)
+		data = conn.recv(4096)
+		if imageflag:
+			conn.send(img)
+			data = conn.recv(4096)
 	conn.close()
 
 def server():
@@ -140,37 +177,53 @@ def server():
 	f = open("peer_public.pem", "wb")
 	f.write(data)
 	f.close()
-
+	imageflag = 0
+	imageflag2 = 0
 	while 1:
-	    data = conn.recv(BUFFER_SIZE)
-	    f = open("eText.txt","wb")
-	    f.write(data)
-	    f.close()
-	    writeDecrypt()
-	    f = open("dText.txt","rb")
-	    x = f.read()
-	    f.close()
-	    c = 0
-	    while 1:
-	    	if x[c] == "^" and x[c+1] == "$":
-	    		x = x[:c]
-	    		prev.append(x)
-	    		break
-	    	c+=1
+		if imageflag:
+			imageflag2 = 1
 
-	    if not x:
-	    	mainc +=1
-	    	continue
-	    if mainc == 0:
-	    	print "Them: " + x
-	    elif prev[mainc-1] != x:
-			print "Them: " + x
+		if imageflag2:
+			data = conn.recv(BUFFER_SIZE)
+			f = open("eImage.png","wb")
+			f.write(data)
+			f.close()
+			writeDecrypt(1)
+			openFile("dImage.png")
+		else:
+		    data = conn.recv(BUFFER_SIZE)
+		    f = open("eText.txt","wb")
+		    f.write(data)
+		    f.close()
+		    writeDecrypt()
+		    f = open("dText.txt","rb")
+		    x = f.read()
+		    f.close()
+		    c = 0
+		    while 1:
+		    	if x[c] == "^" and x[c+1] == "$":
+		    		x = x[:c]
+		    		prev.append(x)
+		    		break
+		    	c+=1
 
-	    mainc += 1
+		    if not x:
+		    	mainc +=1
+		    	continue
+		    if mainc == 0:
+		    	print "Them: " + x
+		    elif prev[mainc-1] != x:
+				print "Them: " + x
 
-	    if not data:
-	    	break
-	    conn.send(x)
+		    if x == "image":
+				imageflag = 1
+
+		    mainc += 1
+		if imageflag == imageflag2:
+			imageflag2 = 0
+			imageflag = 0
+		if not data: break
+		conn.send(x)
 	conn.close()
 
 if __name__ == '__main__':
