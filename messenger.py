@@ -1,15 +1,14 @@
-import socket
-import os
 from multiprocessing import Process
-import time
-import miniupnpc
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
+import socket
+import miniupnpc
 import zlib
 import base64
 import os
 import sys
 import subprocess
+import image
 
 def genKey():
 	new_key = RSA.generate(4096, e=65537)
@@ -55,16 +54,16 @@ def writeEncrypt(imageflag=0):
 		fd = open("eText.txt", "wb")
 		fd.write(encrypted_blob)
 		fd.close()
-	else:
-		fd = open("image.png", "rb")
+	'''else:
+		fd = open("image.jpg", "rb")
 		unencrypted_blob = fd.read()
 		fd.close()
 
 		encrypted_blob = encrypt_blob(unencrypted_blob, public_key)
 
-		fd = open("eImage.png", "wb")
+		fd = open("eImage.jpg", "wb")
 		fd.write(encrypted_blob)
-		fd.close()
+		fd.close()'''
 
 def decrypt_blob(encrypted_blob, private_key):
     rsakey = RSA.importKey(private_key)
@@ -86,9 +85,9 @@ def cleanup():
 	os.remove("dText.txt")
 	os.remove("peer_public.pem")
 	try:
-		os.remove("eImage.png")
-		os.remove("dImage.png")
-		os.remove("image.png")
+		os.remove("eImage.jpg")
+		os.remove("dImage.jpg")
+		os.remove("image.jpg")
 		os.remove("text.txt")
 	except:
 		pass
@@ -105,14 +104,14 @@ def writeDecrypt(imageflag=0):
 		fd = open("dText.txt", "wb")
 		fd.write(decrypt_blob(encrypted_blob, private_key))
 		fd.close()
-	else:
-		fd = open("eImage.png", "rb")
+	'''else:
+		fd = open("eImage.jpg", "rb")
 		encrypted_blob = fd.read()
 		fd.close()
 
-		fd = open("dImage.png", "wb")
+		fd = open("dImage.jpg", "wb")
 		fd.write(decrypt_blob(encrypted_blob, private_key))
-		fd.close()
+		fd.close()'''
 
 def openFile(filepath):
 	if sys.platform.startswith('darwin'):
@@ -142,13 +141,15 @@ def client(fileno,ip):
 			continue
 		elif writeTo == "image":
 			imageflag = 1
-			writeEncrypt(imageflag)
-			f = open("eImage.png","rb")
+			image.writeEncrypt()
+			f = open("eImage.jpg","rb")
 			img = f.read()
 			f.close()
 
+
+
 		f = open("text.txt","wb")
-		f.write(writeTo+"^$")
+		f.write(writeTo)#+"^$")
 		f.close()
 
 		writeEncrypt()
@@ -160,7 +161,7 @@ def client(fileno,ip):
 		conn.send(x)
 		data = conn.recv(4096)
 		if imageflag:
-			conn.send(img)
+			conn.sendall(img)
 			data = conn.recv(4096)
 	conn.close()
 
@@ -171,7 +172,7 @@ def server():
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.bind((TCP_IP, TCP_PORT))
-	s.listen(1)
+	s.listen(3)
 
 	conn, addr = s.accept()
 	mainc = 0
@@ -191,11 +192,11 @@ def server():
 
 		if imageflag2:
 			data = conn.recv(BUFFER_SIZE)
-			f = open("eImage.png","wb")
+			f = open("eImage.jpg","wb")
 			f.write(data)
 			f.close()
-			writeDecrypt(1)
-			openFile("dImage.png")
+			image.writeDecrypt()
+			openFile("dImage.jpg")
 		else:
 		    data = conn.recv(BUFFER_SIZE)
 		    f = open("eText.txt","wb")
@@ -205,14 +206,15 @@ def server():
 		    f = open("dText.txt","rb")
 		    x = f.read()
 		    f.close()
-		    c = 0
+		    '''c = 0
 		    while 1:
 		    	if x[c] == "^" and x[c+1] == "$":
 		    		x = x[:c]
 		    		prev.append(x)
 		    		break
 		    	c+=1
-
+			'''
+		    prev.append(x)
 		    if not x:
 		    	mainc +=1
 		    	continue
