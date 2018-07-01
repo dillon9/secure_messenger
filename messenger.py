@@ -1,5 +1,4 @@
 import socket
-import os
 from multiprocessing import Process
 import time
 import miniupnpc
@@ -108,7 +107,7 @@ def client(fileno,ip):
 			print "Enter something"
 			f.close()
 			continue
-		f.write(writeTo+"^$")
+		f.write(writeTo)
 		f.close()
 
 		writeEncrypt()
@@ -151,13 +150,7 @@ def server():
 	    x = f.read()
 	    f.close()
 	    c = 0
-	    while 1:
-	    	if x[c] == "^" and x[c+1] == "$":
-	    		x = x[:c]
-	    		prev.append(x)
-	    		break
-	    	c+=1
-
+	    prev.append(x)
 	    if not x:
 	    	mainc +=1
 	    	continue
